@@ -1,0 +1,452 @@
+{C}<!--  -->
+<template>
+<div class="mapsc" id="mapChart"></div>
+</template>
+<script>
+import {getRealTimeCount} from '@/api/getdata'
+import $ from 'jquery'
+import echarts from 'echarts'
+import sc from 'echarts/map/json/province/sichuan'
+export default {
+  components: {
+  },
+  data () {
+    return {
+        min:0,
+        max:200,
+        interval:''
+    }
+  },
+  watch: {
+  },
+  created () {
+  },
+  mounted(){
+        this.drawLine()
+        window.onresize = function(){
+           echarts.init(document.getElementById('mapChart')).resize()
+        }
+        let that = this
+        //this.interval = setInterval(that.changeData(), 1000)
+        this.interval = setInterval(function() {
+            getRealTimeCount().then((response) => {
+            const that = this
+            let data = response.data.msg
+            let myChart = echarts.init(document.getElementById('mapChart'))
+            var option = myChart.getOption()
+            var geoCoordMap = { //起点坐标
+                '四川省高级人民法院': [104.021,30.68],
+                '甘孜州中级人民法院': [100.959,30.18],
+                '阿坝中级人民法院': [102.21,31.905],
+                '凉山中级人民法院': [102.26,27.874],
+                '绵阳中级人民法院': [104.71,31.481],
+                '达州中级人民法院': [107.46,31.212],
+                '广元中级人民法院': [105.87,32.423],
+                '雅安中级人民法院': [103.01,29.987],
+                '宜宾中级人民法院': [104.64,28.756],
+                '乐山中级人民法院': [103.76,29.580],
+                '南充中级人民法院': [106.07,30.790],
+                '巴中中级人民法院': [106.94,31.963],
+                '泸州中级人民法院': [105.40,28.883],
+                '成都中级人民法院': [104.03,30.679],
+                '资阳中级人民法院': [104.61,30.122],
+                '攀枝花中级人民法院': [101.81,26.678],
+                '眉山中级人民法院': [103.85,30.075],
+                '广安中级人民法院': [106.64,30.456],
+                '德阳中级人民法院': [104.41,31.126],
+                '内江中级人民法院': [105.05,29.579],
+                '遂宁中级人民法院': [105.60,30.523],
+                '自贡中级人民法院': [104.78,29.332]
+            }
+            var convertData = function(data) { // 处理航线图
+                var res = []; 
+                for(var i = 0; i < data.length; i++) {
+                    var dataItem = data[i]
+                    var fromCoord = geoCoordMap[dataItem[1].name]
+                    var toCoord = geoCoordMap[dataItem[0].name]
+                    if(fromCoord && toCoord) {
+                    res.push({
+                        fromName: dataItem[0].name,
+                        toName: dataItem[1].name,
+                        coords: [fromCoord, toCoord],
+                    })
+                    }
+                }
+                return res
+            }
+            var getScatter  = function(data) {//  获取目的地和 出发地 的 名称 和 经纬度，用来 作为点 的数据
+                let _self = this
+                let scatter = []
+                scatter = data.map(function(dataItem) {
+                    return {
+                        name: dataItem[1].name,
+                        value: geoCoordMap[dataItem[1].name].concat([dataItem[1].value]),
+                        sum:dataItem[1].value
+                    }
+                })
+                scatter.push({
+                    name: data[0][0].name,
+                    value: geoCoordMap[data[0][0].name],
+                    sum:data[0][0].value
+                })
+                return scatter
+            }
+            option.series[0].data =convertData(  [ //航行路线数据
+                [{name: '四川省高级人民法院'}, {name: "甘孜州中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "阿坝中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "凉山中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "绵阳中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}], 
+                [{name: '四川省高级人民法院'}, {name: "达州中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "广元中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "雅安中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "宜宾中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "乐山中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "南充中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "巴中中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "泸州中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}], 
+                [{name: '四川省高级人民法院'}, {name: "成都中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "资阳中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "攀枝花中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "眉山中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "广安中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "德阳中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "内江中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "遂宁中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "自贡中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}]
+            ])
+            option.series[1].data =convertData(  [ //航行路线数据
+                [{name: '四川省高级人民法院'}, {name: "甘孜州中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "阿坝中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "凉山中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "绵阳中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}], 
+                [{name: '四川省高级人民法院'}, {name: "达州中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "广元中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "雅安中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "宜宾中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "乐山中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "南充中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "巴中中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "泸州中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}], 
+                [{name: '四川省高级人民法院'}, {name: "成都中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "资阳中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "攀枝花中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "眉山中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "广安中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "德阳中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "内江中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "遂宁中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "自贡中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}]
+            ])
+            option.series[2].data =getScatter(  [ //航行路线数据
+                [{name: '四川省高级人民法院'}, {name: "甘孜州中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "阿坝中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "凉山中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "绵阳中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}], 
+                [{name: '四川省高级人民法院'}, {name: "达州中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "广元中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "雅安中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "宜宾中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "乐山中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "南充中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "巴中中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "泸州中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}], 
+                [{name: '四川省高级人民法院'}, {name: "成都中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "资阳中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "攀枝花中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "眉山中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "广安中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "德阳中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "内江中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "遂宁中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "自贡中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}]
+            ])
+            myChart.setOption(option)
+            })
+        }, 500000)
+  },
+  methods: {
+    drawLine() {
+        // 注册可用的地图
+        const that = this
+        let myCharts = echarts.init(document.getElementById('mapChart'))
+        echarts.registerMap('sichuan', sc)
+        var _that = this
+        var geoCoordMap = { //起点坐标
+            '四川省高级人民法院': [104.021,30.68],
+            '甘孜州中级人民法院': [100.959,30.18],
+            '阿坝中级人民法院': [102.21,31.905],
+            '凉山中级人民法院': [102.26,27.874],
+            '绵阳中级人民法院': [104.71,31.481],
+            '达州中级人民法院': [107.46,31.212],
+            '广元中级人民法院': [105.87,32.423],
+            '雅安中级人民法院': [103.01,29.987],
+            '宜宾中级人民法院': [104.64,28.756],
+            '乐山中级人民法院': [103.76,29.580],
+            '南充中级人民法院': [106.07,30.790],
+            '巴中中级人民法院': [106.94,31.963],
+            '泸州中级人民法院': [105.40,28.883],
+            '成都中级人民法院': [104.03,30.679],
+            '资阳中级人民法院': [104.61,30.122],
+            '攀枝花中级人民法院': [101.81,26.678],
+            '眉山中级人民法院': [103.85,30.075],
+            '广安中级人民法院': [106.64,30.456],
+            '德阳中级人民法院': [104.41,31.126],
+            '内江中级人民法院': [105.05,29.579],
+            '遂宁中级人民法院': [105.60,30.523],
+            '自贡中级人民法院': [104.78,29.332]
+        }
+        var CDData = [ //航行路线数据
+            [{name: '甘孜州中级人民法院'}, {name: "四川省高级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "甘孜州中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "阿坝中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "凉山中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "绵阳中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}], 
+            [{name: '四川省高级人民法院'}, {name: "达州中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "广元中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "雅安中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "宜宾中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "乐山中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "南充中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "巴中中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "泸州中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}], 
+            [{name: '四川省高级人民法院'}, {name: "成都中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "资阳中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "攀枝花中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "眉山中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "广安中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "德阳中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "内江中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "遂宁中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+            [{name: '四川省高级人民法院'}, {name: "自贡中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}]
+        ]
+        var convertData = function(data) { // 处理航线图
+            var res = []; 
+            for(var i = 0; i < data.length; i++) {
+                var dataItem = data[i]
+                var fromCoord = geoCoordMap[dataItem[1].name]
+                var toCoord = geoCoordMap[dataItem[0].name]
+                if(fromCoord && toCoord) {
+                   res.push({
+                    fromName: dataItem[0].name,
+                    toName: dataItem[1].name,
+                    coords: [fromCoord, toCoord],
+                  })
+                }
+            }
+            return res
+        }
+        var getScatter  = function(data) {//  获取目的地和 出发地 的 名称 和 经纬度，用来 作为点 的数据
+            let _self = this
+            let scatter = []
+            scatter = data.map(function(dataItem) {
+                return {
+                    name: dataItem[1].name,
+                    value: geoCoordMap[dataItem[1].name].concat([dataItem[1].value]),
+                    sum:dataItem[1].value
+                }
+            })
+            scatter.push({
+                name: data[0][0].name,
+                value: geoCoordMap[data[0][0].name],
+                sum:data[0][0].value
+            })
+            return scatter
+        }
+        var option = {
+            nameMap: {
+              '四川省高级人民法院':'四川省高级人民法院',
+              '甘孜藏族自治州': '甘孜州',
+              '阿坝藏族羌族自治州': '阿坝',
+              '凉山彝族自治州': '凉山',
+              '成都市': '成都',
+              '绵阳市': '绵阳',
+              '达州市': '达州',
+              '广元市': '广元',
+              '雅安市': '雅安',
+              '宜宾市': '宜宾',
+              '乐山市': '乐山',
+              '南充市': '南充',
+              '巴中市': '巴中',
+              '泸州市': '泸州',
+              '资阳市': '资阳',
+              '攀枝花市': '攀枝花',
+              '眉山市': '眉山',
+              '广安市': '广安',
+              '德阳市': '德阳',
+              '内江市': '内江',
+              '遂宁市': '遂宁',
+              '自贡市': '自贡'
+            },
+            backgroundColor: '#404a59',
+            //提示框
+            tooltip: {
+                trigger: 'item',
+                formatter: function (params) {
+                    if (params.data.sum == undefined ) {
+                        return params.data.name
+                    } else {
+                        return params.data.name +'<br/>本月数据汇总 ：'+ params.data.sum
+                    }
+                }
+            },
+            //地理坐标系组件(决定显示什么类型)
+            geo: {
+                map: 'sichuan',
+                //图形上的文本
+                label: {
+                    normal: {
+                        show: true,
+                        color:'#fff'
+                    },
+                    emphasis: {
+                        show: false,
+                        color:'#fff'
+                    }
+                },
+                zoom:1.2,
+                roam:true,
+                scaleLimit:{
+                    min:1,
+                    max:2
+                },
+                //图形上的样式
+                itemStyle: {
+                    normal: {
+                        areaColor: '#323c48',
+                        borderColor: '#404a59'
+                    },
+                    emphasis: {
+                        areaColor: '#2a333d'
+                    }
+                },
+            },
+            series:[{
+                    type: 'effectScatter',    
+                    zlevel: 2,
+                    coordinateSystem: 'geo',
+                    rippleEffect: {
+                        brushType: 'stroke'
+                    },
+                    label: {
+                        emphasis: {
+                            show: true,
+                            position: 'right',
+                            formatter: '{b}'
+                        }
+                    },
+                    symbolSize: 2,
+                    showEffectOn: 'render',
+                    itemStyle: {
+                        normal: {
+                            color: '#46bee9'
+                        }
+                    },
+                    data: convertData(CDData)     // 特效的起始、终点位置
+                },
+                { // 航线效果
+                    type: 'lines',
+                    zlevel: 2,
+                    coordinateSystem: 'geo',
+                    large: true,
+                    effect: {
+                        show: true,
+                        constantSpeed: 30,
+                        symbol: 'pin',
+                        symbolSize: 3,
+                        trailLength: 0,
+                    },
+                    lineStyle: {
+                        normal: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                                    offset: 0, color: '#58B3CC'
+                                }, {
+                                    offset: 1, color: '#F58158'
+                                }], false),
+                            width: 1,
+                            opacity: 0.2,
+                            curveness: 0.1
+                        }
+                    },
+                    data: convertData(CDData) //特效的起始、终点位置，一个二维数组，
+                },
+                { // 散点效果
+                    type: 'effectScatter',
+                    coordinateSystem: 'geo',
+                    zlevel: 3,
+                    symbolOffset: ['-120%', '-100%'],
+                    rippleEffect: {
+                        brushType: 'stroke'   // 波纹绘制效果
+                    },
+                    showEffectOn: 'render',
+                    rippleEffect: {
+                        brushType: 'stroke'
+                    },
+                    hoverAnimation: true,
+                    symbolSize: 5,
+                    itemStyle: {
+                        normal: {
+                            color: '#F58158'
+                        },
+                        emphasis: {
+                            borderColor: '#fff',
+                            borderWidth: 1
+                        }
+                    },
+                    data: getScatter(CDData)
+            }]
+        }
+        myCharts.setOption(option)
+    },
+    changeData(){
+        getRealTimeCount().then((response) => {
+            let data = response.data.msg
+            let myChart = echarts.init(document.getElementById('mapChart'))
+            var option = myChart.getOption()
+            option.series[0].data =  [ //航行路线数据
+                [{name: '四川省高级人民法院'}, {name: "甘孜州中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "阿坝中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "凉山中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "绵阳中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}], 
+                [{name: '四川省高级人民法院'}, {name: "达州中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "广元中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "雅安中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "宜宾中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "乐山中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "南充中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "巴中中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "泸州中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}], 
+                [{name: '四川省高级人民法院'}, {name: "成都中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "资阳中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "攀枝花中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "眉山中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "广安中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "德阳中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "内江中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "遂宁中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}],
+                [{name: '四川省高级人民法院'}, {name: "自贡中级人民法院",value: Math.floor(Math.random()*(200 - 1) + 1)}]
+            ]
+            myChart.setOption(option)
+        })
+    }
+  },
+  beforeDestroy() {
+    if (this.interval) {
+      clearInterval(this.interval)// 在Vue实例销毁前，清除定时器
+    }
+  },
+  destroyed(){
+        if(window.onresize) { 
+            window.onresize = function(){
+                return
+            }
+        }
+    }
+}
+
+</script>
+<style lang='scss' scoped>
+.mapsc{
+    width: 100%;
+    height: 100%;
+}
+</style>
